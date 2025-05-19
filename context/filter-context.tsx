@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, type ReactNode } from "react"
-import type { Product, ProductColor, ProductSize } from "@/app/data/products"
+import { type Product, type ProductColor, type ProductSize, getPriceRange } from "@/app/data/products"
 
 type SortOption = "featured" | "newest" | "price-low-high" | "price-high-low" | "name-a-z" | "name-z-a"
 
@@ -24,15 +24,14 @@ type FilterContextType = {
   resetFilters: () => void
 }
 
-// Define default price range without relying on getPriceRange
-const defaultPriceRange: [number, number] = [0, 1000]
+const defaultPriceRange = getPriceRange()
 
 // Create a default context value
 const defaultContextValue: FilterContextType = {
   filters: {
     colors: [],
     sizes: [],
-    priceRange: defaultPriceRange,
+    priceRange: [defaultPriceRange.min, defaultPriceRange.max],
     searchQuery: "",
     sortBy: "featured",
   },
@@ -56,7 +55,7 @@ export function FilterProvider({ children, initialProducts = [] }: FilterProvide
   const [filters, setFilters] = useState<FilterState>({
     colors: [],
     sizes: [],
-    priceRange: defaultPriceRange,
+    priceRange: [defaultPriceRange.min, defaultPriceRange.max],
     searchQuery: "",
     sortBy: "featured",
   })
@@ -79,10 +78,7 @@ export function FilterProvider({ children, initialProducts = [] }: FilterProvide
       }
 
       // Filter by price range
-      const productPrice =
-        typeof product.price === "string" ? Number.parseFloat(product.price.replace(/[^0-9.]/g, "")) : product.price
-
-      if (isNaN(productPrice) || productPrice < filters.priceRange[0] || productPrice > filters.priceRange[1]) {
+      if (product.numericPrice < filters.priceRange[0] || product.numericPrice > filters.priceRange[1]) {
         return false
       }
 
@@ -104,13 +100,9 @@ export function FilterProvider({ children, initialProducts = [] }: FilterProvide
         case "newest":
           return new Date(b.dateAdded || "").getTime() - new Date(a.dateAdded || "").getTime()
         case "price-low-high":
-          const priceA = typeof a.price === "string" ? Number.parseFloat(a.price.replace(/[^0-9.]/g, "")) : a.price
-          const priceB = typeof b.price === "string" ? Number.parseFloat(b.price.replace(/[^0-9.]/g, "")) : b.price
-          return (isNaN(priceA) ? 0 : priceA) - (isNaN(priceB) ? 0 : priceB)
+          return a.numericPrice - b.numericPrice
         case "price-high-low":
-          const priceC = typeof a.price === "string" ? Number.parseFloat(a.price.replace(/[^0-9.]/g, "")) : a.price
-          const priceD = typeof b.price === "string" ? Number.parseFloat(b.price.replace(/[^0-9.]/g, "")) : b.price
-          return (isNaN(priceD) ? 0 : priceD) - (isNaN(priceC) ? 0 : priceC)
+          return b.numericPrice - a.numericPrice
         case "name-a-z":
           return a.name.localeCompare(b.name)
         case "name-z-a":
@@ -145,7 +137,7 @@ export function FilterProvider({ children, initialProducts = [] }: FilterProvide
     setFilters({
       colors: [],
       sizes: [],
-      priceRange: defaultPriceRange,
+      priceRange: [defaultPriceRange.min, defaultPriceRange.max],
       searchQuery: "",
       sortBy: "featured",
     })

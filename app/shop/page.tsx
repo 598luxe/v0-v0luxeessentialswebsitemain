@@ -1,40 +1,32 @@
 import { Suspense } from "react"
-import type { Metadata } from "next"
 import { products } from "@/app/data/products"
 import { ProductGrid } from "@/components/product-grid"
-import { FilterSidebar } from "@/components/filter-sidebar"
-import { SortDropdown } from "@/components/sort-dropdown"
-import { SearchBar } from "@/components/search-bar"
-import { FilterProvider } from "@/context/filter-context"
-
-export const metadata: Metadata = {
-  title: "Shop All Products | Luxe Essentials",
-  description: "Browse our collection of luxury essentials for your lifestyle.",
-}
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ShopPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-black">Shop All Products</h1>
+    <div className="container py-10">
+      <h1 className="text-2xl font-bold mb-6">Shop All Products</h1>
 
-      <FilterProvider initialProducts={products}>
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-1/4">
-            <FilterSidebar />
-          </div>
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <ProductGrid products={products} columns={3} />
+      </Suspense>
+    </div>
+  )
+}
 
-          <div className="w-full md:w-3/4">
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between">
-              <SearchBar />
-              <SortDropdown />
-            </div>
-
-            <Suspense fallback={<div className="text-center py-10 text-black">Loading products...</div>}>
-              <ProductGrid products={products} />
-            </Suspense>
+function ProductGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="rounded-md border bg-background overflow-hidden">
+          <Skeleton className="aspect-square" />
+          <div className="p-4 space-y-2">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/3" />
           </div>
         </div>
-      </FilterProvider>
-    </main>
+      ))}
+    </div>
   )
 }

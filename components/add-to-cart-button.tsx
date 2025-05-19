@@ -1,32 +1,50 @@
 "use client"
 
 import { useState } from "react"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingBag } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
+import { toast } from "@/components/ui/use-toast"
 import type { Product } from "@/app/data/products"
 
 interface AddToCartButtonProps {
   product: Product
+  className?: string
 }
 
-export function AddToCartButton({ product }: AddToCartButtonProps) {
+export function AddToCartButton({ product, className = "" }: AddToCartButtonProps) {
   const [isAdding, setIsAdding] = useState(false)
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
     setIsAdding(true)
 
-    // Convert price to number if it's a string
-    const price =
-      typeof product.price === "string" ? Number.parseFloat(product.price.replace(/[^0-9.]/g, "")) || 0 : product.price
+    try {
+      // Convert price to number if it's a string
+      const price =
+        typeof product.price === "string" ? Number.parseFloat(product.price.replace(/[^0-9.]/g, "")) : product.price
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: price,
-      image: product.image || "/placeholder.svg",
-      quantity: 1,
-    })
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: price || 0,
+        image: product.image,
+        quantity: 1,
+      })
+
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      })
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+
+      toast({
+        title: "Error",
+        description: "Could not add item to cart. Please try again.",
+        variant: "destructive",
+      })
+    }
 
     setTimeout(() => {
       setIsAdding(false)
@@ -34,21 +52,15 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   }
 
   return (
-    <button
-      onClick={handleAddToCart}
-      disabled={isAdding}
-      className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-sm font-medium transition-colors ${
-        isAdding ? "bg-green-600 text-white" : "bg-black text-white hover:bg-gray-800"
-      }`}
-    >
+    <Button onClick={handleAddToCart} disabled={isAdding} className={className}>
       {isAdding ? (
         "Added!"
       ) : (
         <>
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingBag className="mr-2 h-4 w-4" />
           Add to Cart
         </>
       )}
-    </button>
+    </Button>
   )
 }

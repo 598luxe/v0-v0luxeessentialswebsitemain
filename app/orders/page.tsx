@@ -1,129 +1,178 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+"use client"
+
+import { useState } from "react"
 
 export default function OrdersPage() {
+  const [activeTab, setActiveTab] = useState("track")
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-black">My Orders</h1>
+    <main className="max-w-6xl mx-auto px-4 py-8 pb-16">
+      <h1 className="text-2xl font-bold text-black text-center mb-6">Orders & Returns</h1>
 
-      <Tabs defaultValue="orders">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="orders" className="text-black">
-            Track Order
-          </TabsTrigger>
-          <TabsTrigger value="returns" className="text-black">
-            Returns & Refunds
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs */}
+      <div className="flex border-b border-[#e5c1c4] mb-6">
+        <button
+          className={`py-2 px-4 font-bold ${
+            activeTab === "track" ? "text-black border-b-2 border-black" : "text-black/70 hover:text-black"
+          }`}
+          onClick={() => setActiveTab("track")}
+        >
+          Track Order
+        </button>
+        <button
+          className={`py-2 px-4 font-bold ${
+            activeTab === "returns" ? "text-black border-b-2 border-black" : "text-black/70 hover:text-black"
+          }`}
+          onClick={() => setActiveTab("returns")}
+        >
+          Returns & Refunds
+        </button>
+      </div>
 
-        <TabsContent value="orders" className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-black">Track Your Order</h2>
-          <p className="text-black mb-4">Enter your order number to track the status of your purchase.</p>
-
-          <form className="space-y-4">
+      {/* Track Order Tab */}
+      {activeTab === "track" && (
+        <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+          <h2 className="text-xl font-bold text-black mb-4">Track Your Order</h2>
+          <form className="space-y-4 max-w-md">
             <div>
               <label htmlFor="order-id" className="block text-sm font-medium text-black mb-1">
                 Order ID
               </label>
               <input
-                id="order-id"
                 type="text"
+                id="order-id"
+                name="order-id"
+                className="w-full px-3 py-2 border border-[#e5c1c4] rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
                 placeholder="e.g., ORD-12345"
-                className="w-full p-2 border border-gray-300 rounded-md text-black"
-                required
               />
             </div>
-
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="your.email@example.com"
-                className="w-full p-2 border border-gray-300 rounded-md text-black"
-                required
-              />
+              <button
+                type="submit"
+                className="bg-black text-white py-2 px-4 rounded-sm hover:bg-black/80 transition-colors"
+              >
+                Track
+              </button>
             </div>
-
-            <Button type="submit" className="bg-black text-white hover:bg-black/90">
-              Track Order
-            </Button>
           </form>
-        </TabsContent>
 
-        <TabsContent value="returns" className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-black">Returns & Refunds</h2>
-          <p className="text-black mb-6">
-            Return requests must be submitted within 48 hours of receiving your order. All items must be in their
-            original packaging and unworn/unused condition. Please note that shipping costs are non-refundable.
-          </p>
+          <div className="mt-8 p-4 border border-[#e5c1c4] rounded-sm">
+            <p className="text-black font-medium mb-2">Order Status: In Process</p>
+            <div className="w-full bg-[#e5c1c4]/30 h-2 rounded-full">
+              <div className="bg-black h-2 rounded-full w-1/3"></div>
+            </div>
+            <div className="flex justify-between mt-2 text-xs text-black/70">
+              <span>Order Placed</span>
+              <span>Processing</span>
+              <span>Shipped</span>
+              <span>Delivered</span>
+            </div>
+          </div>
 
-          <Button className="bg-[#e9d8fd] hover:bg-[#d6bcfa] text-black font-medium py-2 px-4 rounded-md shadow-[0_4px_0_0_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(0,0,0,0.3)] transition-all mb-8">
-            Start New Return
-          </Button>
+          <div className="mt-8">
+            <h3 className="text-lg font-bold text-black mb-4">Order History</h3>
+            <div className="border border-[#e5c1c4] rounded-sm divide-y divide-[#e5c1c4]">
+              <div className="p-4 hover:bg-[#f8e1e3]/20">
+                <p className="text-black">Order #1234 – Delivered March 10, 2025</p>
+                <p className="text-sm text-black/70">2 items - $78.99</p>
+              </div>
+              <div className="p-4 hover:bg-[#f8e1e3]/20">
+                <p className="text-black">Order #1156 – Delivered February 22, 2025</p>
+                <p className="text-sm text-black/70">1 item - $34.99</p>
+              </div>
+              <div className="p-4 hover:bg-[#f8e1e3]/20">
+                <p className="text-black">Order #1089 – Delivered January 15, 2025</p>
+                <p className="text-sm text-black/70">3 items - $129.97</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium mb-4 text-black">Return Form</h3>
+      {/* Returns Tab */}
+      {activeTab === "returns" && (
+        <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+          <h2 className="text-xl font-bold text-black mb-4">Returns & Refunds</h2>
+          <div className="mb-6">
+            <p className="text-black mb-4">
+              Return requests must be submitted within 48 hours of receiving your order. All items must be in their
+              original packaging and unworn/unused condition. Please note that shipping costs are non-refundable.
+            </p>
+            <button className="bg-[#D9A5B3] text-white py-2 px-4 rounded-sm hover:bg-[#c99aaa] transition-colors">
+              Start New Return
+            </button>
+          </div>
 
-            <form className="space-y-4">
+          <div className="mt-8 border-t border-[#e5c1c4] pt-6">
+            <h3 className="text-lg font-bold text-black mb-4">Return Form</h3>
+            <form className="space-y-4 max-w-md">
               <div>
-                <label htmlFor="return-order-id" className="block text-sm font-medium text-black mb-1">
+                <label htmlFor="order-id" className="block text-sm font-medium text-black mb-1">
                   Order ID
                 </label>
                 <input
-                  id="return-order-id"
                   type="text"
+                  id="order-id"
+                  name="order-id"
+                  className="w-full px-3 py-2 border border-[#e5c1c4] rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
                   placeholder="e.g., ORD-12345"
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
-                  required
                 />
               </div>
-
               <div>
                 <label htmlFor="product" className="block text-sm font-medium text-black mb-1">
                   Product
                 </label>
-                <select id="product" className="w-full p-2 border border-gray-300 rounded-md text-black" required>
+                <select
+                  id="product"
+                  name="product"
+                  className="w-full px-3 py-2 border border-[#e5c1c4] rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
+                >
                   <option value="">Select a product</option>
-                  <option value="product-1">Luxe Essential T-Shirt</option>
-                  <option value="product-2">Premium Denim Jeans</option>
-                  <option value="product-3">Cashmere Sweater</option>
+                  <option value="SKU001">Elegant Tote - SKU001</option>
+                  <option value="SKU002">Mini Crossbody - SKU002</option>
+                  <option value="SKU003">Leather Clutch - SKU003</option>
                 </select>
               </div>
-
               <div>
                 <label htmlFor="reason" className="block text-sm font-medium text-black mb-1">
                   Reason for Return
                 </label>
-                <select id="reason" className="w-full p-2 border border-gray-300 rounded-md text-black" required>
+                <select
+                  id="reason"
+                  name="reason"
+                  className="w-full px-3 py-2 border border-[#e5c1c4] rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
+                >
                   <option value="">Select a reason</option>
-                  <option value="wrong-size">Wrong Size</option>
-                  <option value="damaged">Damaged/Defective</option>
-                  <option value="not-as-described">Not as Described</option>
-                  <option value="changed-mind">Changed Mind</option>
+                  <option value="wrong-item">Received wrong item</option>
+                  <option value="damaged">Item arrived damaged</option>
+                  <option value="not-as-described">Item not as described</option>
+                  <option value="changed-mind">Changed my mind</option>
                 </select>
               </div>
-
               <div>
                 <label htmlFor="comments" className="block text-sm font-medium text-black mb-1">
                   Additional Comments
                 </label>
                 <textarea
                   id="comments"
+                  name="comments"
                   rows={3}
-                  className="w-full p-2 border border-gray-300 rounded-md text-black"
+                  className="w-full px-3 py-2 border border-[#e5c1c4] rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Please provide any additional details about your return..."
                 ></textarea>
               </div>
-
-              <Button type="submit" className="bg-black text-white hover:bg-black/90">
-                Submit Return Request
-              </Button>
+              <div>
+                <button
+                  type="submit"
+                  className="bg-black text-white py-2 px-4 rounded-sm hover:bg-black/80 transition-colors"
+                >
+                  Submit Return Request
+                </button>
+              </div>
             </form>
           </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+      )}
+    </main>
   )
 }

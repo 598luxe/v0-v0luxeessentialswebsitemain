@@ -12,6 +12,7 @@ interface ProductCarouselProps {
 export function ProductCarousel({ images, productName }: ProductCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const nextSlide = () => {
@@ -24,6 +25,10 @@ export function ProductCarousel({ images, productName }: ProductCarouselProps) {
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index)
+  }
+
+  const handleImageError = (index: number) => {
+    setImageErrors((prev) => ({ ...prev, [index]: true }))
   }
 
   useEffect(() => {
@@ -58,14 +63,21 @@ export function ProductCarousel({ images, productName }: ProductCarouselProps) {
           {images.map((image, index) => (
             <div key={index} className="w-full flex-shrink-0">
               <div className="relative aspect-square">
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`${productName} - Image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority={index === 0}
-                />
+                {imageErrors[index] ? (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <span className="text-gray-400">{productName}</span>
+                  </div>
+                ) : (
+                  <Image
+                    src={image || "/placeholder.svg"}
+                    alt={`${productName} - Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority={index === 0}
+                    onError={() => handleImageError(index)}
+                  />
+                )}
               </div>
             </div>
           ))}
