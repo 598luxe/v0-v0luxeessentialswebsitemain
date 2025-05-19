@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { X, ChevronDown, ChevronUp, Filter } from "lucide-react"
 import { useFilter } from "@/context/filter-context"
-import { getAllColors, getAllSizes, getAllCategories, getAllSubcategories, getPriceRange } from "@/app/data/products"
+import { getAllColors, getAllSizes, getAllCategories, getAllSubcategories } from "@/app/data/products"
 
 export function FilterSidebar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,7 +17,9 @@ export function FilterSidebar() {
   const sizes = getAllSizes()
   const categories = getAllCategories()
   const subcategories = getAllSubcategories()
-  const defaultPriceRange = getPriceRange()
+
+  // Define default price range directly
+  const defaultPriceRange = { min: 0, max: 1000 }
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))

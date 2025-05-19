@@ -5,14 +5,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Search, X } from "lucide-react"
 import { useFilter } from "@/context/filter-context"
-import { useRouter } from "next/navigation"
 
-interface SearchBarProps {
-  onSearch?: () => void
-}
-
-export function SearchBar({ onSearch }: SearchBarProps) {
-  const router = useRouter()
+export function SearchBar() {
   const { filters, setSearchQuery } = useFilter()
   const [inputValue, setInputValue] = useState("")
 
@@ -26,15 +20,6 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setSearchQuery(inputValue)
-
-    // If we're not on the shop page, redirect there with the search query
-    if (!window.location.pathname.includes("/shop")) {
-      router.push(`/shop?search=${encodeURIComponent(inputValue)}`)
-    }
-
-    if (onSearch) {
-      onSearch()
-    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

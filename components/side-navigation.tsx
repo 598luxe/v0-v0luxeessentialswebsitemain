@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ChevronDown, ChevronRight, X } from "lucide-react"
 import { usePathname } from "next/navigation"
-import { SheetClose } from "@/components/ui/sheet"
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -37,8 +36,26 @@ const navigationItems = [
 ]
 
 export function SideNavigation() {
+  const [isOpen, setIsOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const pathname = usePathname()
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Close mobile menu when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsOpen(false)
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const toggleExpand = (name: string) => {
     setExpandedItems((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]))
@@ -61,16 +78,15 @@ export function SideNavigation() {
               )}
             </button>
           ) : (
-            <SheetClose asChild>
-              <Link
-                href={item.href}
-                className={`block w-full py-3 px-4 text-black hover:bg-[#e9d8fd]/50 rounded-sm transition-colors font-bold ${
-                  pathname === item.href ? "bg-[#e9d8fd]/30" : ""
-                } ${level > 0 ? "text-lg pl-8" : "text-xl"}`}
-              >
-                {item.name}
-              </Link>
-            </SheetClose>
+            <Link
+              href={item.href}
+              className={`block w-full py-3 px-4 text-black hover:bg-[#e9d8fd]/50 rounded-sm transition-colors font-bold ${
+                pathname === item.href ? "bg-[#e9d8fd]/30" : ""
+              } ${level > 0 ? "text-lg pl-8" : "text-xl"}`}
+              onClick={() => setIsOpen(false)} // Close mobile menu when clicking a link
+            >
+              {item.name}
+            </Link>
           )}
         </div>
 
@@ -82,17 +98,33 @@ export function SideNavigation() {
   }
 
   return (
-    <div className="h-full bg-[#faf7f5] overflow-y-auto">
-      <div className="p-4 flex justify-between items-center border-b border-[#e9d8fd]">
-        <h2 className="font-bold text-xl text-black">Menu</h2>
-        <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-          <X className="h-5 w-5" />
-          <span className="sr-only">Close</span>
-        </SheetClose>
+    <>
+      {/* Sidebar Navigation - Desktop */}
+      <div className="hidden md:block w-64 bg-[#faf7f5] border-r border-[#e9d8fd] h-screen overflow-y-auto fixed left-0 top-0">
+        <div className="p-6">
+          <nav className="mt-8">{renderNavItems(navigationItems)}</nav>
+        </div>
       </div>
-      <div className="p-4">
-        <nav>{renderNavItems(navigationItems)}</nav>
-      </div>
-    </div>
+
+      {/* Mobile Navigation Overlay */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/50 z-50" onClick={() => setIsOpen(false)} aria-hidden="true">
+          <div
+            className="absolute top-0 left-0 w-64 h-full bg-[#faf7f5] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 flex justify-between items-center border-b border-[#e9d8fd]">
+              <h2 className="font-bold text-xl text-black">Menu</h2>
+              <button onClick={() => setIsOpen(false)} aria-label="Close menu">
+                <X className="h-6 w-6 text-black" />
+              </button>
+            </div>
+            <div className="p-6">
+              <nav className="mt-8">{renderNavItems(navigationItems)}</nav>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

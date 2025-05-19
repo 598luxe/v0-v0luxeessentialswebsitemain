@@ -1,64 +1,89 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Package } from "lucide-react"
+import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const announcements = [
-  <span key="0">
-    ENJOY $5 OFF YOUR FIRST ORDER WHEN YOU{" "}
-    <Link href="/login" className="underline font-semibold">
-      SIGN UP
-    </Link>
-    !
-  </span>,
-  <span key="1">HANDMADE BAGS</span>,
-  <span key="2">CLOTHING</span>,
-  <span key="3">TECH & ACCESSORIES</span>,
-  <span key="4">BEAUTY/MAKEUP</span>,
-  <span key="5">JEWELRY & ACCESSORIES</span>,
-  <span key="6">FOOTWEAR</span>,
+  "FREE EXPRESS SHIPPING ON U.S. ORDERS $100+",
+  "NEW SUMMER COLLECTION AVAILABLE NOW",
+  "SIGN UP FOR OUR NEWSLETTER AND GET 10% OFF",
 ]
 
 export function SlidingAnnouncementBanner() {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
+    if (!isVisible || isPaused) return
+
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length)
-    }, 5000) // Slowed down to 5 seconds
+    }, 5000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [isVisible, isPaused])
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + announcements.length) % announcements.length)
+  }
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length)
+  }
+
+  const handleClose = () => {
+    setIsVisible(false)
+  }
+
+  if (!isVisible) return null
 
   return (
-    <div className="bg-black text-white py-3 px-4 text-center text-sm">
-      <div className="relative h-5">
-        {announcements.map((announcement, index) => (
-          <div
-            key={index}
-            className="absolute inset-0 flex items-center justify-center transition-all duration-1000" // Slowed down transition
-            style={{
-              opacity: index === currentIndex ? 1 : 0,
-              transform: `translateX(${(index - currentIndex) * 100}%)`,
-            }}
-          >
-            <span className="text-sm font-medium">{announcement}</span>
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center justify-center mt-2">
-        <Package className="h-4 w-4 mr-2" />
-        <p>FREE STANDARD SHIPPING ON U.S. ORDERS $50+ | FREE EXPRESS SHIPPING ON U.S. ORDERS $100+</p>
-      </div>
-    </div>
-  )
-}
+    <div
+      className="bg-[#e9d8fd] text-black py-2 relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="container mx-auto px-4 flex items-center justify-center">
+        <button
+          onClick={handlePrev}
+          className="absolute left-2 sm:left-4 p-1 text-black hover:text-black/70"
+          aria-label="Previous announcement"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
 
-export function StickyFooter() {
-  return (
-    <div className="sticky bottom-0 left-0 right-0 bg-[#e9d8fd] py-3 text-center text-sm text-black font-bold z-40">
-      📦 FREE STANDARD SHIPPING ON U.S. ORDERS $50+ | FREE EXPRESS SHIPPING ON U.S. ORDERS $100+
+        <div className="text-center text-sm font-medium overflow-hidden h-6">
+          {announcements.map((announcement, index) => (
+            <div
+              key={index}
+              className={cn(
+                "transition-all duration-500 transform",
+                index === currentIndex ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0 absolute",
+              )}
+            >
+              {announcement}
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleNext}
+          className="absolute right-8 sm:right-10 p-1 text-black hover:text-black/70"
+          aria-label="Next announcement"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+
+        <button
+          onClick={handleClose}
+          className="absolute right-2 sm:right-4 p-1 text-black hover:text-black/70"
+          aria-label="Close announcement"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   )
 }

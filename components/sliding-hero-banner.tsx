@@ -6,33 +6,18 @@ import { motion, AnimatePresence } from "framer-motion"
 
 const bannerTexts = [
   {
-    text: "FREE SHIPPING ON ORDERS OVER $50",
+    text: "ENJOY $5 OFF YOUR FIRST ORDER WHEN YOU",
     link: {
-      text: "SHOP NOW",
-      href: "/shop",
+      text: "SIGN UP",
+      href: "/login",
     },
   },
-  {
-    text: "NEW ARRIVALS - SUMMER COLLECTION",
-    link: {
-      text: "SHOP NOW",
-      href: "/shop/clothing",
-    },
-  },
-  {
-    text: "EXCLUSIVE HANDMADE BAGS",
-    link: {
-      text: "EXPLORE",
-      href: "/shop/bags",
-    },
-  },
-  {
-    text: "LUXURY TECH ACCESSORIES",
-    link: {
-      text: "DISCOVER",
-      href: "/shop/tech",
-    },
-  },
+  "HANDMADE BAGS",
+  "CLOTHING",
+  "TECH & ACCESSORIES",
+  "BEAUTY/MAKEUP",
+  "JEWELRY & ACCESSORIES",
+  "FOOTWEAR",
 ]
 
 export function SlidingHeroBanner() {
