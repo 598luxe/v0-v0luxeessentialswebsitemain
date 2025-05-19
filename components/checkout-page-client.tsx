@@ -1,13 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/context/cart-context"
 import Link from "next/link"
-import { PaymentMethods } from "@/components/payment-methods"
+import { PaymentMethods } from "./payment-methods"
 
-export default function CheckoutPage() {
+export function CheckoutPageClient() {
   const { items, totalPrice, clearCart } = useCart()
   const [orderPlaced, setOrderPlaced] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Only render on client side
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+          <h1 className="text-center text-2xl font-semibold text-black">Checkout</h1>
+          <p className="text-center text-gray-600">Loading checkout...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Default to 0 if totalPrice is undefined
   const safeTotal = totalPrice || 0
@@ -144,10 +161,17 @@ export default function CheckoutPage() {
                       <div className="flex-1 ml-3">
                         <p className="text-sm font-medium text-black">{item.name}</p>
                         <p className="text-sm text-gray-600">
-                          ${item.price.toFixed(2)} x {item.quantity}
+                          ${typeof item.price === "number" ? item.price.toFixed(2) : item.price} x {item.quantity}
                         </p>
                       </div>
-                      <p className="text-sm font-medium text-black">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm font-medium text-black">
+                        $
+                        {typeof item.price === "number"
+                          ? (item.price * item.quantity).toFixed(2)
+                          : (Number.parseFloat(item.price.toString().replace(/[^0-9.]/g, "")) * item.quantity).toFixed(
+                              2,
+                            )}
+                      </p>
                     </li>
                   ))}
                 </ul>
@@ -173,24 +197,6 @@ export default function CheckoutPage() {
                     Place Order
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-              <h2 className="text-lg font-medium text-black mb-4">Need Help?</h2>
-              <div className="space-y-4 text-black">
-                <p>
-                  <strong>Request a Refund:</strong> If you're not satisfied with your purchase, you can request a
-                  refund within 48 hours of delivery.
-                </p>
-                <p>
-                  <strong>Contact Customer Service:</strong> For any questions or concerns, please contact our customer
-                  service team at support@luxeessentials.com.
-                </p>
-                <p>
-                  <strong>Shipping Policy:</strong> Standard shipping takes 5-7 business days. Express shipping takes
-                  2-3 business days.
-                </p>
               </div>
             </div>
           </div>

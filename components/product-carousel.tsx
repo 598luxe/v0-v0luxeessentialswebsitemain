@@ -1,70 +1,112 @@
 "use client"
 
-import { useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { getProductsByCategory } from "@/app/data/products"
 
-export function ProductCarousel({ category }: { category: string }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const products = getProductsByCategory(category)
+interface ProductCarouselProps {
+  images: string[]
+  productName: string
+}
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const { current } = scrollRef
-      const scrollAmount = direction === "left" ? -current.offsetWidth / 2 : current.offsetWidth / 2
+export function ProductCarousel({ images, productName }: ProductCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isHovering, setIsHovering] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-      current.scrollBy({ left: scrollAmount, behavior: "smooth" })
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
+  }
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index)
+  }
+
+  useEffect(() => {
+    if (!isHovering && images.length > 1) {
+      timerRef.current = setInterval(() => {
+        nextSlide()
+      }, 5000)
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [isHovering, images.length])
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="aspect-square bg-gray-200 flex items-center justify-center">
+        <p className="text-gray-500">No image available</p>
+      </div>
+    )
   }
 
   return (
-    <div className="relative">
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 z-10">
-        <button
-          onClick={() => scroll("left")}
-          className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors"
-          aria-label="Scroll left"
+    <div className="relative" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+      <div className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
-          <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-black" />
-        </button>
-      </div>
-
-      <div
-        ref={scrollRef}
-        className="flex overflow-x-auto scrollbar-hide gap-3 md:gap-4 pb-4"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {products.map((product) => (
-          <div key={product.id} className="flex-none w-[160px] md:w-[250px]">
-            <Link href={`/product/${product.id}`} className="block group">
-              <div className="relative h-[160px] w-[160px] md:h-[250px] md:w-[250px] bg-[#f8f5f2] rounded-md overflow-hidden">
+          {images.map((image, index) => (
+            <div key={index} className="w-full flex-shrink-0">
+              <div className="relative aspect-square">
                 <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
+                  src={image || "/placeholder.svg"}
+                  alt={`${productName} - Image ${index + 1}`}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={index === 0}
                 />
               </div>
-              <div className="mt-3">
-                <h3 className="text-sm md:text-base text-black font-medium">{product.name}</h3>
-                <p className="text-sm text-black">{product.price}</p>
-              </div>
-            </Link>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10">
-        <button
-          onClick={() => scroll("right")}
-          className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors"
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-black" />
-        </button>
-      </div>
+      {/* Only show navigation if there are multiple images */}
+      {images.length > 1 && (
+        <>
+          {/* Navigation Arrows */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-black shadow-md hover:bg-white"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-black shadow-md hover:bg-white"
+            aria-label="Next image"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          {/* Navigation Dots */}
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`h-2 w-2 rounded-full ${
+                  currentIndex === index ? "bg-black" : "bg-gray-300"
+                } transition-colors`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

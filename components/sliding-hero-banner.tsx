@@ -41,12 +41,12 @@ export function SlidingHeroBanner() {
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 flex items-center justify-center text-sm text-black font-medium"
+            className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm text-black font-medium px-2 sm:px-0"
           >
             {typeof bannerTexts[currentIndex] === "string" ? (
               bannerTexts[currentIndex]
             ) : (
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 flex-wrap justify-center">
                 <span>{bannerTexts[currentIndex].text}</span>
                 <Link
                   href={bannerTexts[currentIndex].link.href}

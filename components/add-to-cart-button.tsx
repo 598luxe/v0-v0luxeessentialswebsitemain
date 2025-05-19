@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
-import { ShoppingBag } from "lucide-react"
 import type { Product } from "@/app/data/products"
 
 interface AddToCartButtonProps {
@@ -17,33 +16,39 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   const handleAddToCart = () => {
     setIsAdding(true)
 
-    // Convert string price to number
-    const numericPrice =
-      typeof product.price === "string" ? Number.parseFloat(product.price.replace(/[^0-9.]/g, "")) : product.price
+    // Convert price to number if it's a string
+    const price =
+      typeof product.price === "string" ? Number.parseFloat(product.price.replace(/[^0-9.]/g, "")) || 0 : product.price
 
-    // Add item to cart
     addItem({
       id: product.id,
       name: product.name,
-      price: numericPrice,
-      image: product.image || "/placeholder.svg?height=400&width=400",
+      price: price,
+      image: product.image || "/placeholder.svg",
       quantity: 1,
     })
 
-    // Show added animation
     setTimeout(() => {
       setIsAdding(false)
     }, 1000)
   }
 
   return (
-    <Button
+    <button
       onClick={handleAddToCart}
-      className="w-full bg-black text-white hover:bg-gray-800 transition-colors"
       disabled={isAdding}
+      className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-sm font-medium transition-colors ${
+        isAdding ? "bg-green-600 text-white" : "bg-black text-white hover:bg-gray-800"
+      }`}
     >
-      <ShoppingBag className="mr-2 h-4 w-4" />
-      {isAdding ? "Added!" : "Add to Cart"}
-    </Button>
+      {isAdding ? (
+        "Added!"
+      ) : (
+        <>
+          <ShoppingCart className="h-5 w-5" />
+          Add to Cart
+        </>
+      )}
+    </button>
   )
 }

@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 export interface CartItem {
   id: string
   name: string
-  price: number
+  price: number | string
   image: string
   quantity: number
 }
@@ -37,9 +37,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [itemCount, setItemCount] = useState(0)
   const [totalPrice, setTotalPrice] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
-  // Load cart from localStorage on client-side
+  // Only run on client-side
   useEffect(() => {
+    setMounted(true)
     try {
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
@@ -52,37 +54,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Update localStorage when cart changes
   useEffect(() => {
+    if (!mounted) return
+
     try {
       localStorage.setItem("cart", JSON.stringify(items))
 
       // Calculate totals
       const count = items.reduce((total, item) => total + item.quantity, 0)
-      const price = items.reduce((total, item) => total + item.price * item.quantity, 0)
+
+      const price = items.reduce((total, item) => {
+        const itemPrice =
+          typeof item.price === "number"
+            ? item.price
+            : Number.parseFloat(item.price.toString().replace(/[^0-9.]/g, "")) || 0
+        return total + itemPrice * item.quantity
+      }, 0)
 
       setItemCount(count)
       setTotalPrice(price)
     } catch (error) {
       console.error("Failed to save cart to localStorage:", error)
     }
-  }, [items])
+  }, [items, mounted])
 
   const addItem = (newItem: CartItem) => {
-    setItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex((item) => item.id === newItem.id)
+    try {
+      setItems((prevItems) => {
+        const existingItemIndex = prevItems.findIndex((item) => item.id === newItem.id)
 
-      if (existingItemIndex >= 0) {
-        // Update quantity if item already exists
-        const updatedItems = [...prevItems]
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity,
+        if (existingItemIndex >= 0) {
+          // Update quantity if item already exists
+          const updatedItems = [...prevItems]
+          updatedItems[existingItemIndex] = {
+            ...updatedItems[existingItemIndex],
+            quantity: updatedItems[existingItemIndex].quantity + (newItem.quantity || 1),
+          }
+          return updatedItems
+        } else {
+          // Add new item
+          return [...prevItems, { ...newItem, quantity: newItem.quantity || 1 }]
         }
-        return updatedItems
-      } else {
-        // Add new item
-        return [...prevItems, newItem]
-      }
-    })
+      })
+    } catch (error) {
+      console.error("Error adding item to cart:", error)
+    }
   }
 
   const removeItem = (id: string) => {

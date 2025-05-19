@@ -1,114 +1,77 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import type { Product } from "@/app/data/products"
+import Image from "next/image"
+import { AddToCartButton } from "./add-to-cart-button"
+import { WishlistToggleButton } from "./wishlist-toggle-button"
 import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
-import { ShoppingCart, Heart } from "lucide-react"
+import type { Product } from "@/app/data/products"
 
 interface ProductGridProps {
   products: Product[]
-  columns?: number
 }
 
-export function ProductGrid({ products, columns = 3 }: ProductGridProps) {
-  const { addToCart } = useCart()
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
+export function ProductGrid({ products }: ProductGridProps) {
+  const { addItem } = useCart()
+  const [mounted, setMounted] = useState(false)
 
-  const columnClass = {
-    1: "grid-cols-1",
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
-  }[columns]
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   if (!products || products.length === 0) {
-    return <div className="text-center py-10 text-black">No products found.</div>
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500">No products found.</p>
+      </div>
+    )
+  }
+
+  const formatPrice = (price: number | string) => {
+    // Convert string to number if it's a string
+    const numericPrice = typeof price === "string" ? Number.parseFloat(price) : price
+
+    // Check if the price is a valid number
+    if (isNaN(numericPrice)) {
+      return "$0.00"
+    }
+
+    // Format the price with 2 decimal places
+    return `$${numericPrice.toFixed(2)}`
   }
 
   return (
-    <div className={`grid ${columnClass} gap-6`}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
         <div
           key={product.id}
-          className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-          onMouseEnter={() => setHoveredProduct(product.id)}
-          onMouseLeave={() => setHoveredProduct(null)}
+          className="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
         >
-          <Link href={`/product/${product.id}`} className="block relative aspect-square">
+          <Link href={`/product/${product.id}`} className="block aspect-square overflow-hidden">
             <Image
               src={product.image || "/placeholder.svg"}
               alt={product.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              width={500}
+              height={500}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            {product.sale && (
-              <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                SALE
-              </span>
-            )}
-            {product.new && (
-              <span className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                NEW
-              </span>
-            )}
           </Link>
 
           <div className="p-4">
-            <Link href={`/product/${product.id}`}>
-              <h3 className="text-lg font-medium text-black mb-1 hover:underline">{product.name}</h3>
+            <Link href={`/product/${product.id}`} className="block">
+              <h3 className="text-lg font-medium text-gray-900 mb-1">{product.name}</h3>
+              <p className="text-xl font-bold text-black">{formatPrice(product.price)}</p>
             </Link>
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="text-black font-bold">{product.price}</span>
-                {product.originalPrice && (
-                  <span className="text-gray-500 line-through ml-2 text-sm">{product.originalPrice}</span>
-                )}
-              </div>
-              {product.stock !== undefined && product.stock <= 3 && (
-                <span className="text-red-500 text-xs">Only {product.stock} left!</span>
-              )}
+
+            <div className="mt-4 flex space-x-2">
+              <AddToCartButton product={product} />
+              <WishlistToggleButton product={product} iconOnly />
             </div>
-
-            {/* Color options */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="mt-2 flex gap-1">
-                {product.colors.map((color) => (
-                  <div
-                    key={color}
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: color }}
-                    title={color.charAt(0).toUpperCase() + color.slice(1)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Quick action buttons */}
-          <div
-            className={`absolute bottom-0 left-0 right-0 bg-white p-3 flex gap-2 transition-all duration-300 ${
-              hoveredProduct === product.id ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
-            }`}
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-black border-black hover:bg-black hover:text-white"
-              onClick={(e) => {
-                e.preventDefault()
-                addToCart(product)
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
-            </Button>
-            <Button variant="outline" size="icon" className="text-black border-black hover:bg-black hover:text-white">
-              <Heart className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       ))}
